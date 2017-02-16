@@ -23,7 +23,7 @@
 		var tiro;
 		var tanque;
 		var cant = 0;
-		var webSocket =new WebSocket('ws://localhost:8887/WebSocketTest/websocket');
+		var webSocket =new WebSocket('ws://172.20.10.14:8080/WebSocketTest/websocket');
 
 		webSocket.onerror = function(event) {
       onError(event)
@@ -220,11 +220,11 @@
 
 			  // Envío al servidor las coordenadas de mi buque.
 			      var msg = {
-			        tipo: "coordenadas",
-			        posx: dron.x.toFixed(2),
-			        posy: dron.y.toFixed(2),
-			        orientacion:dron.angle,
-			        rot: dron.rotation
+			        "tipo": "coordenadas",
+			        "posx": dron.x.toFixed(2),
+			        "posy": dron.y.toFixed(2),
+			        "orientacion":dron.angle,
+			        "rot": dron.rotation
 			      };
 			      webSocket.send(JSON.stringify(msg));
 			     // webSocket.send('Pepe');
