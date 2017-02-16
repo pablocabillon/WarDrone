@@ -23,9 +23,9 @@
 		var tiro;
 		var tanque;
 		var cant = 0;
-		var webSocket =new WebSocket('ws://172.20.10.14:8080/WebSocketTest/websocket');
+		var webSocket =new WebSocket('ws://localhost:8887/WebSocketTest/websocket');
 
-    webSocket.onerror = function(event) {
+		webSocket.onerror = function(event) {
       onError(event)
     };
 
@@ -36,10 +36,16 @@
     webSocket.onmessage = function(event) {
       onMessage(event)
     };
+    
 
     function onMessage(event) {
-      alert(event.data);
+    	var msg = JSON.parse(event.data);
+    	dron.x=msg.posx;
+    	dron.y=msg.posy;
+    	dron.angle=msg.orientacion;
+    	dron.rotation=msg.rot;
     }
+    
 
     function onOpen(event) {
       // definir si se quiere modificar algo en pantalla sino ya se ve por linea de comando
@@ -189,17 +195,14 @@
 				bomba.fire();
 			}
 			
-		
+			enviarCoords();
 							
 						
 		}
 		
 		function disparoDron() {
-		cant++;
-		if(cant>28){
 			tanque.kill();
-			webSocket.send('Mata tanque');
-			}
+
 		}
 		
 		function disparoTank() {
@@ -212,7 +215,22 @@
 			
 		}
 		
-		
+	
+		function enviarCoords() {
+
+			  // Envío al servidor las coordenadas de mi buque.
+			      var msg = {
+			        tipo: "coordenadas",
+			        posx: dron.x.toFixed(2),
+			        posy: dron.y.toFixed(2),
+			        orientacion:dron.angle,
+			        rot: dron.rotation
+			      };
+			      webSocket.send(JSON.stringify(msg));
+			     // webSocket.send('Pepe');
+			  return false;
+
+			}
 		
 	</script>
 
