@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Singleton;
+//
 import javax.websocket.EncodeException;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
@@ -14,15 +14,17 @@ import javax.websocket.OnOpen;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 @ServerEndpoint("/websocket")
-@Singleton //es - a la vez- nuestro EJB para programar eventos
+//es - a la vez- nuestro EJB para programar eventos
 public class WebSocketTest {
 
 static final Logger LOGGER = Logger.getLogger(WebSocketTest.class.getName());
@@ -31,20 +33,16 @@ private static Set<Session> conexiones = Collections.synchronizedSet(new HashSet
  
 @OnMessage
 public void onMessage(String mensaje, Session sesion) throws IOException {
-    JsonReader jLector = Json.createReader(new StringReader(mensaje));         
-    JsonObject jMensaje = jLector.readObject();         
-    jLector.close();
-
+//    JsonReader jLector = Json.createReader(new StringReader(mensaje));         
+//    JsonObject jMensaje = jLector.readObject();         
+//    jLector.close();
+	JsonElement jelement = new JsonParser().parse(mensaje);
+	JsonObject  jobject = jelement.getAsJsonObject();
     synchronized(conexiones){
 	      // Recorro los clientes conectados y reenvío el mensaje recibido.
       for(Session client : conexiones){
         if (!client.equals(sesion)){
-            try {
-      		  client.getBasicRemote().sendObject(jMensaje);
-      	  } catch (EncodeException e) {
-      		  // TODO Auto-generated catch block
-      		  e.printStackTrace();
-      	  }
+            client.getBasicRemote().sendText(jobject.toString());
         }
       }
   }

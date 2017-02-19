@@ -23,7 +23,8 @@
 		var tiro;
 		var tanque;
 		var cant = 0;
-		var webSocket =new WebSocket('ws://172.20.10.14:8080/WebSocketTest/websocket');
+		var cursors;
+		var webSocket =new WebSocket('ws://192.168.1.176:8080/WebSocketTest/websocket');
 
 		webSocket.onerror = function(event) {
       onError(event)
@@ -39,11 +40,40 @@
     
 
     function onMessage(event) {
-    	var msg = JSON.parse(event.data);
-    	dron.x=msg.posx;
-    	dron.y=msg.posy;
-    	dron.angle=msg.orientacion;
-    	dron.rotation=msg.rot;
+    	var json = event.data;
+    	var contenido = JSON.parse(json);
+    	   	
+    	dron.x = contenido.drones[0].x;
+    	dron.y = contenido.drones[0].y;
+    	dron.angle = contenido.drones[0].angle;
+    	dron.rotation = contenido.drones[0].rotation;
+//    	var msg=event.data.split(",");
+//    	switch(msg[0])
+//    	{
+//   	case"dron":
+//  		dron.x=msg[1];
+//	    	dron.y=msg[2];
+//	    	dron.angle=msg[3];
+//	    	dron.rotation=msg[4];
+//	    	break;
+//   	case"tanque":
+//  		tanque.x=msg[1];
+//	    	tanque.y=msg[2];
+//	    	tanque.angle=msg[3];
+//	    	tanque.rotation=msg[4];
+//	    	break;
+//   	case"disparodron":
+//  		bala.fire();
+// 			break;
+// 		case"disparotanque":
+// 			balin.fire();
+// 			break;
+// 		case "muertetanque":
+// 			tanque.kill();
+//  		alert("Ganador Dron Aéreo");
+//  		break;
+// 	}
+    	
     }
     
 
@@ -143,23 +173,24 @@
 			// CONTROLES AEREO // 
 			if (controles.left.isDown) {
 				dron.angle = 180;
-				
+				enviarCoordenadasDron();	
 				dron.body.velocity.x = -100;
 				
 			}
 			else if (controles.right.isDown) {
 				dron.angle = 360;
 				dron.body.velocity.x = 100;
-			
+				enviarCoordenadasDron();
 			}
 			else if (controles.up.isDown) {
 				dron.angle = 270;
 				dron.body.velocity.y = -100;
-			
+				enviarCoordenadasDron();
 			}
 			else if (controles.down.isDown) {
 				dron.angle = 90;					
-				dron.body.velocity.y = 100;				
+				dron.body.velocity.y = 100;		
+				enviarCoordenadasDron();
 			}
 			
 			// FIN CONTROLES AEREO //
@@ -168,25 +199,28 @@
 			if (derT.isDown) {
 				tanque.angle = 360;
 				tanque.body.velocity.x = 100;
+				//enviarCoordenadasTanque();
 				
 			}
 			else if (izqT.isDown) {
 					tanque.angle = 360;
 					tanque.body.velocity.x = -100;
-								
+					//enviarCoordenadasTanque();			
 			}
 			else if (upT.isDown) {
 					tanque.angle = 270;
-								
+					//enviarCoordenadasTanque();			
 			}
 			// FIN CONTROLES TANQUE
 			
 			if (tiro.isDown){
+				//EnvioDisparoTanque();
 				balin.fire();
 			}
 			
 			
 			if (fuego.isDown){
+				//EnvioDisparoDron();
 				bala.fire();
 				
 			}
@@ -195,17 +229,19 @@
 				bomba.fire();
 			}
 			
-			enviarCoords();
-							
-						
+			
+			
 		}
 		
 		function disparoDron() {
 			tanque.kill();
+			alert("Ganador Dron Aéreo");
+			//EnvioMuerteTanque();
 
 		}
 		
 		function disparoTank() {
+			
 			dron.kill();
 			
 		}
@@ -216,22 +252,52 @@
 		}
 		
 	
-		function enviarCoords() {
-
-			  // Envío al servidor las coordenadas de mi buque.
-			      var msg = {
-			        "tipo": "coordenadas",
-			        "posx": dron.x.toFixed(2),
-			        "posy": dron.y.toFixed(2),
-			        "orientacion":dron.angle,
-			        "rot": dron.rotation
-			      };
-			      webSocket.send(JSON.stringify(msg));
-			     // webSocket.send('Pepe');
+		function enviarCoordenadasDron() {
+			var datosAEnviar = {};
+			var drones = [];
+			datosAEnviar.drones = drones;
+			var drone = {
+			"x"			: dron.x.toFixed(2),
+			"y"			: dron.y.toFixed(2),  
+			"angle" 	: dron.angle,
+			"rotation"	: dron.rotation
+			}
+			datosAEnviar.drones.push(drone);
+//			var drone = new Object();
+//			drone.x = dron.x.toFixed(2);
+//			drone.y = dron.y.toFixed(2);
+//			drone.angle = dron.angle;//String(dron.angle);
+//			drone.rotation = dron.rotation;//String(dron.rotation);
+   			var msg = JSON.stringify(datosAEnviar);
+//			      var msg="dron,"+dron.x.toFixed(2)+","+dron.y.toFixed(2)+","+ dron.angle +","+dron.rotation;
+			    //  alert(msg);
+			      webSocket.send(msg);
 			  return false;
 
 			}
+		function enviarCoordenadasTanque() {
+
+		      //var msg="tanque,"+tanque.x.toFixed(2)+","+tanque.y.toFixed(2)+","+ tanque.angle +","+tanque.rotation;
+		      //webSocket.send(msg);
+		  return false;
+
+		}
 		
+		function EnvioDisparoDron()
+		{
+			//var msg="disparodron";
+			//webSocket.send(msg);
+		}
+		function EnvioDisparoTanque()
+		{
+			//var msg="disparotanque";
+			//webSocket.send(msg);
+		}
+		function EnvioMuerteTanque()
+		{
+			//var msg="muertetanque";
+			//webSocket.send(msg);
+		}
 	</script>
 
 </body>
