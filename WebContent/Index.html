@@ -8,7 +8,7 @@
 </head>
 <body>
 	<script type="text/javascript">
-		var mundo = new Phaser.Game(800, 600, Phaser.AUTO, 'mundo', {preload: preload, create: create, update: update});
+		var mundo = new Phaser.Game(500, 500, Phaser.AUTO, 'mundo', {preload: preload, create: create, update: update});
 		
 		var dron;
 		var controles;
@@ -25,7 +25,12 @@
 		var cant = 0;
 		var cursors;
 		var webSocket =new WebSocket('ws://192.168.1.176:8080/WebSocketTest/websocket');
-
+		var datosAEnviar = {};
+		var drones = [];
+		var hayFuegoAereo;
+		var hayFuegoTerrestre;
+		var droneTerrestre;
+		var droneAereo;
 		webSocket.onerror = function(event) {
       onError(event)
     };
@@ -42,37 +47,37 @@
     function onMessage(event) {
     	var json = event.data;
     	var contenido = JSON.parse(json);
-    	   	
-    	dron.x = contenido.drones[0].x;
-    	dron.y = contenido.drones[0].y;
-    	dron.angle = contenido.drones[0].angle;
-    	dron.rotation = contenido.drones[0].rotation;
-//    	var msg=event.data.split(",");
-//    	switch(msg[0])
-//    	{
-//   	case"dron":
-//  		dron.x=msg[1];
-//	    	dron.y=msg[2];
-//	    	dron.angle=msg[3];
-//	    	dron.rotation=msg[4];
-//	    	break;
-//   	case"tanque":
-//  		tanque.x=msg[1];
-//	    	tanque.y=msg[2];
-//	    	tanque.angle=msg[3];
-//	    	tanque.rotation=msg[4];
-//	    	break;
-//   	case"disparodron":
-//  		bala.fire();
-// 			break;
-// 		case"disparotanque":
-// 			balin.fire();
-// 			break;
-// 		case "muertetanque":
-// 			tanque.kill();
-//  		alert("Ganador Dron Aéreo");
-//  		break;
-// 	}
+    	for(var i in contenido.drones) {
+    		if(contenido.drones[i].tipo == "aereo"){
+    			dron.x = contenido.drones[i].x;
+    	    	dron.y = contenido.drones[i].y;
+    	    	dron.angle = contenido.drones[i].angle;
+    	    	dron.rotation = contenido.drones[i].rotation;
+    	    /* 	if(contenido.drones[i].bala == "true"){
+    	    		hayFuegoAereo = true;
+    	    		//bala.fire();
+    	    		contenido.drones[i].bala = "false";
+    	    	}
+    	    	if(contenido.drones[i].bomba == "true")
+    	    		contenido.drones[i].bomba = "false";
+    	     */		//dispara bomba	
+    		}else{
+    			//Es terrestre
+    			tanque.x = contenido.drones[i].x;
+    			tanque.y = contenido.drones[i].y;
+    			tanque.angle = contenido.drones[i].angle;
+    			tanque.rotation = contenido.drones[i].rotation;
+    			/* if(contenido.drones[i].bala == "true"){
+    				hayFuegoTerrestre = true;
+    				//balin.fire();
+    				contenido.drones[i].bala = "false";
+    			}
+    			if(contenido.drones[i].vida == "false")
+    			 	tanque.kill();
+    			*/
+    		}
+    		    
+    	}
     	
     }
     
@@ -156,6 +161,30 @@
 			upT = mundo.input.keyboard.addKey(Phaser.Keyboard.SHIFT);	
 			tiro = mundo.input.keyboard.addKey(Phaser.Keyboard.Z);
 			
+			//Para enviar la informacion
+			
+			datosAEnviar.drones = drones;
+			droneAereo = {
+					"tipo"      : "aereo",
+					"x"			: dron.x.toFixed(2),
+					"y"			: dron.y.toFixed(2),  
+					"angle" 	: dron.angle,
+					"rotation"	: dron.rotation,
+					"bala"		: "false",
+					"bomba"     : "false"
+			}
+			droneTerrestre = {
+					"tipo"      : "tanque",
+					"x"			: tanque.x.toFixed(2),
+					"y"			: tanque.y.toFixed(2),  
+					"angle" 	: tanque.angle,
+					"rotation"	: tanque.rotation,
+					"bala"		: "false",
+					"vida"		: "true"
+			}
+			datosAEnviar.drones.push(droneAereo);
+			datosAEnviar.drones.push(droneTerrestre);
+			
 		}
 		
 		function update() {
@@ -199,44 +228,52 @@
 			if (derT.isDown) {
 				tanque.angle = 360;
 				tanque.body.velocity.x = 100;
-				//enviarCoordenadasTanque();
+				enviarCoordenadasTanque();
 				
 			}
 			else if (izqT.isDown) {
 					tanque.angle = 360;
 					tanque.body.velocity.x = -100;
-					//enviarCoordenadasTanque();			
+					enviarCoordenadasTanque();			
 			}
 			else if (upT.isDown) {
 					tanque.angle = 270;
-					//enviarCoordenadasTanque();			
+					enviarCoordenadasTanque();			
 			}
 			// FIN CONTROLES TANQUE
 			
+			/* if(hayFuegoTerrestre){
+				balin.fire();
+				hayFuegoTerrestre = false;
+			}
+			 */	
 			if (tiro.isDown){
-				//EnvioDisparoTanque();
+				EnvioDisparoTanque();
 				balin.fire();
 			}
 			
-			
-			if (fuego.isDown){
-				//EnvioDisparoDron();
+			/* if(hayFuegoAereo){
 				bala.fire();
+				hayFuegoAereo = false;
+			} */
 				
+			if (fuego.isDown){
+				EnvioDisparoDron();
+				bala.fire();
 			}
 			
 			if (va.isDown){
 				bomba.fire();
 			}
 			
-			
+
 			
 		}
 		
 		function disparoDron() {
 			tanque.kill();
 			alert("Ganador Dron Aéreo");
-			//EnvioMuerteTanque();
+			EnvioMuerteTanque();
 
 		}
 		
@@ -247,57 +284,77 @@
 		}
 		
 		function boom() {
-			tanque.kill();
-			
+			tanque.kill();		
 		}
 		
 	
 		function enviarCoordenadasDron() {
-			var datosAEnviar = {};
-			var drones = [];
-			datosAEnviar.drones = drones;
-			var drone = {
-			"x"			: dron.x.toFixed(2),
-			"y"			: dron.y.toFixed(2),  
-			"angle" 	: dron.angle,
-			"rotation"	: dron.rotation
-			}
-			datosAEnviar.drones.push(drone);
-//			var drone = new Object();
-//			drone.x = dron.x.toFixed(2);
-//			drone.y = dron.y.toFixed(2);
-//			drone.angle = dron.angle;//String(dron.angle);
-//			drone.rotation = dron.rotation;//String(dron.rotation);
-   			var msg = JSON.stringify(datosAEnviar);
-//			      var msg="dron,"+dron.x.toFixed(2)+","+dron.y.toFixed(2)+","+ dron.angle +","+dron.rotation;
-			    //  alert(msg);
-			      webSocket.send(msg);
-			  return false;
+			for(var i in datosAEnviar.drones) {
+	    		if(datosAEnviar.drones[i].tipo == "aereo"){
+	    			datosAEnviar.drones[i].x = dron.x;
+	    			datosAEnviar.drones[i].y = dron.y;
+	    			datosAEnviar.drones[i].angle = dron.angle;
+	    			datosAEnviar.drones[i].rotation = dron.rotation; 
+	    		}
+	    	}
+			enviar();
+	    	
+			return false;
 
-			}
+		}
+		
 		function enviarCoordenadasTanque() {
-
-		      //var msg="tanque,"+tanque.x.toFixed(2)+","+tanque.y.toFixed(2)+","+ tanque.angle +","+tanque.rotation;
-		      //webSocket.send(msg);
-		  return false;
+			for(var i in datosAEnviar.drones) {
+	    		if(datosAEnviar.drones[i].tipo == "tanque"){
+	    			datosAEnviar.drones[i].x = tanque.x;
+	    			datosAEnviar.drones[i].y = tanque.y;
+	    			datosAEnviar.drones[i].angle = tanque.angle;
+	    			datosAEnviar.drones[i].rotation = tanque.rotation;
+	    		}		    
+	    	}
+			enviar();
+			return false;
 
 		}
 		
 		function EnvioDisparoDron()
 		{
-			//var msg="disparodron";
-			//webSocket.send(msg);
+		/* 	for(var i in datosAEnviar.drones) {
+	    		if(datosAEnviar.drones[i].tipo == "aereo"){
+	    			datosAEnviar.drones[i].bala = "true";
+	    		}		    
+	    	}
+		 	enviar();
+			*/
 		}
 		function EnvioDisparoTanque()
 		{
-			//var msg="disparotanque";
-			//webSocket.send(msg);
+		 /*
+			for(var i in datosAEnviar.drones) {
+	    		if(datosAEnviar.drones[i].tipo == "tanque"){
+	    			datosAEnviar.drones[i].bala = "true";
+	    		}		    
+	    	}
+			enviar();
+			*/
 		}
 		function EnvioMuerteTanque()
 		{
-			//var msg="muertetanque";
-			//webSocket.send(msg);
+			/*
+			for(var i in datosAEnviar.drones) {
+	    		if(datosAEnviar.drones[i].tipo == "tanque"){
+	    			datosAEnviar.drones[i].vida = "false";
+	    		}		    
+	    	}
+			enviar();
+			*/
 		}
+		function enviar(){
+			var msg = JSON.stringify(datosAEnviar);
+	        webSocket.send(msg);	
+		}
+		
+		
 	</script>
 
 </body>
