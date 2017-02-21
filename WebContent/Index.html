@@ -24,11 +24,11 @@
 		var tanque;
 		var cant = 0;
 		var cursors;
-		var webSocket =new WebSocket('ws://192.168.1.176:8080/WebSocketTest/websocket');
+		var webSocket =new WebSocket('ws://172.20.10.14:8080/WebSocketTest/websocket');
 		var datosAEnviar = {};
 		var drones = [];
-		var hayFuegoAereo;
-		var hayFuegoTerrestre;
+		//var hayFuegoAereo;
+		//var hayFuegoTerrestre;
 		var droneTerrestre;
 		var droneAereo;
 		webSocket.onerror = function(event) {
@@ -53,33 +53,33 @@
     	    	dron.y = contenido.drones[i].y;
     	    	dron.angle = contenido.drones[i].angle;
     	    	dron.rotation = contenido.drones[i].rotation;
-    	    /* 	if(contenido.drones[i].bala == "true"){
-    	    		hayFuegoAereo = true;
-    	    		//bala.fire();
+    	     	if(contenido.drones[i].bala == "true"){
+    	    		//hayFuegoAereo = true;
+    	    		bala.fire();
     	    		contenido.drones[i].bala = "false";
     	    	}
     	    	if(contenido.drones[i].bomba == "true")
     	    		contenido.drones[i].bomba = "false";
-    	     */		//dispara bomba	
+    	     		//dispara bomba	
     		}else{
     			//Es terrestre
     			tanque.x = contenido.drones[i].x;
     			tanque.y = contenido.drones[i].y;
     			tanque.angle = contenido.drones[i].angle;
     			tanque.rotation = contenido.drones[i].rotation;
-    			/* if(contenido.drones[i].bala == "true"){
-    				hayFuegoTerrestre = true;
-    				//balin.fire();
+    			if(contenido.drones[i].bala == "true"){
+    				//hayFuegoTerrestre = true;
+    				balin.fire();
     				contenido.drones[i].bala = "false";
     			}
     			if(contenido.drones[i].vida == "false")
     			 	tanque.kill();
-    			*/
+    			
     		}
     		    
     	}
     	
-    }
+    }	
     
 
     function onOpen(event) {
@@ -319,35 +319,35 @@
 		
 		function EnvioDisparoDron()
 		{
-		/* 	for(var i in datosAEnviar.drones) {
+		 	for(var i in datosAEnviar.drones) {
 	    		if(datosAEnviar.drones[i].tipo == "aereo"){
 	    			datosAEnviar.drones[i].bala = "true";
 	    		}		    
 	    	}
 		 	enviar();
-			*/
+			
 		}
 		function EnvioDisparoTanque()
 		{
-		 /*
+		 
 			for(var i in datosAEnviar.drones) {
 	    		if(datosAEnviar.drones[i].tipo == "tanque"){
 	    			datosAEnviar.drones[i].bala = "true";
 	    		}		    
 	    	}
 			enviar();
-			*/
+			
 		}
 		function EnvioMuerteTanque()
 		{
-			/*
+			
 			for(var i in datosAEnviar.drones) {
 	    		if(datosAEnviar.drones[i].tipo == "tanque"){
 	    			datosAEnviar.drones[i].vida = "false";
 	    		}		    
 	    	}
 			enviar();
-			*/
+			
 		}
 		function enviar(){
 			var msg = JSON.stringify(datosAEnviar);
